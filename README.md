@@ -11,6 +11,10 @@ Build and packages check automation for Django projects
 - Send an e-mail error report if a command exited not with returncode 0 and
   exit with it's returncode.
 
+## Usage
+
+Run `python3 django-up-to-date/build.py` after a source code or package update.
+
 ## Required
 
 - Python 3
@@ -18,7 +22,7 @@ Build and packages check automation for Django projects
 - Django (because of the commands)
 - `build.py` has to be in a subdirectory of the Django project (designed to be
   used as Git submodule) or the environment variable `DJANGO_PROJECT_PATH` has
-  to be set.
+  to be set
 - `uwsgi.ini` in the Django project directory
 - `config.ini` in the Django project directory:
 
