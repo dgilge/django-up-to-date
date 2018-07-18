@@ -11,11 +11,11 @@ SEPERATOR = '\n########## {} {}\n'
 
 
 class Base:
-    test = False
     project_path = os.environ.get(
         'DJANGO_PROJECT_PATH',
         os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     )
+    test = False
 
     @property
     def config(self):
@@ -26,40 +26,6 @@ class Base:
             self._config.read(os.path.join(self.project_path, 'config.ini'))
             return self._config
 
-    def send_email(self, subject, content):
-        email = EmailMessage()
-        email.set_content(content)
-        email['Subject'] = subject
-        email['From'] = self.config.get('email', 'DEFAULT_FROM_EMAIL')
-        to = self.config.get('email', 'DEFAULT_TO_EMAILS')
-        email['To'] = to.replace(' ', ', ')
-        if self.test:
-            return email
-        server = smtplib.SMTP()
-        server.connect(self.config.get('email', 'HOST'), 587)
-        server.starttls()
-        server.login(
-            self.config.get('email', 'HOST_USER'),
-            self.config.get('email', 'HOST_PASSWORD'),
-        )
-        server.send_message(email)
-        server.quit()
-
-
-class Build(Base):
-    """
-    Automation for commands when new source code arrived.
-    """
-    beginn = SEPERATOR.format('build', datetime.datetime.now())
-    python = '.venv/bin/python'
-
-    @property
-    def log_path(self):
-        path = self.config.get('environment', 'LOG_PATH')
-        if not os.path.isabs(path):
-            path = os.path.join(self.project_path, path)
-        return os.path.join(path, 'django_build.log')
-
     @property
     def debug(self):
         return self.config.getboolean('environment', 'debug')
@@ -68,26 +34,12 @@ class Build(Base):
     def name(self):
         return self.config.get('environment', 'NAME')
 
-    def run(self):
-        """
-        Runs all build commands.
-        """
-        if self.debug:
-            sys.stdout.write(self.beginn)
-        else:
-            with open(self.log_path, 'a+') as log_file:
-                log_file.write(self.beginn)
-
-        self.sync_packages()
-        # Try to collect static files
-        self.collect_static_files(dry=True)
-        self.run_tests()
-        self.migrate_database()
-        if not self.debug:
-            # TODO Schedule to --clear it from time to time
-            self.collect_static_files()
-            self.reload_webserver()
-        sys.exit(0)
+    @property
+    def log_path(self):
+        path = self.config.get('environment', 'LOG_PATH')
+        if not os.path.isabs(path):
+            path = os.path.join(self.project_path, path)
+        return os.path.join(path, self.log_file)
 
     def run_command(self, *args, exit=True, input=None):
         """
@@ -156,6 +108,55 @@ class Build(Base):
                 # Exit
                 sys.exit(e.returncode)
         return result
+
+    def send_email(self, subject, content):
+        email = EmailMessage()
+        email.set_content(content)
+        email['Subject'] = subject
+        email['From'] = self.config.get('email', 'DEFAULT_FROM_EMAIL')
+        to = self.config.get('email', 'DEFAULT_TO_EMAILS')
+        email['To'] = to.replace(' ', ', ')
+        if self.test:
+            return email
+        server = smtplib.SMTP()
+        server.connect(self.config.get('email', 'HOST'), 587)
+        server.starttls()
+        server.login(
+            self.config.get('email', 'HOST_USER'),
+            self.config.get('email', 'HOST_PASSWORD'),
+        )
+        server.send_message(email)
+        server.quit()
+
+
+class Build(Base):
+    """
+    Automation for commands when new source code arrived.
+    """
+    beginn = SEPERATOR.format('build', datetime.datetime.now())
+    log_file = 'django_build.log'
+    python = '.venv/bin/python'
+
+    def run(self):
+        """
+        Runs all build commands.
+        """
+        if self.debug:
+            sys.stdout.write(self.beginn)
+        else:
+            with open(self.log_path, 'a+') as log_file:
+                log_file.write(self.beginn)
+
+        self.sync_packages()
+        # Try to collect static files
+        self.collect_static_files(dry=True)
+        self.run_tests()
+        self.migrate_database()
+        if not self.debug:
+            # TODO Schedule to --clear it from time to time
+            self.collect_static_files()
+            self.reload_webserver()
+        sys.exit(0)
 
     def sync_packages(self):
         """
@@ -242,3 +243,16 @@ class Build(Base):
         path = os.path.join(self.project_path, 'uwsgi.ini')
         Path(path).touch()
         return path
+
+
+class Checks(Base):
+    """
+    A wrapper around checks with e-mail notification in case of issues.
+    """
+    log_file = 'django_safety.log'
+
+    def safety(self):
+        """
+        Looks for packages with known security vulnerabilities.
+        """
+        self.run_command('pipenv', 'check')

@@ -7,6 +7,7 @@ Build and packages check automation for Django projects
 - Run tests, excluding tags `slow` and `selenium`. If they passed
 - run all required Django commands necessary after code base updates and
 - `touch uwsgi.ini`.
+- Find packages with known security vulnerabilities.
 - Log all output to a file or shell.
 - Send an e-mail error report if a command exited not with returncode 0 and
   exit with it's returncode.
@@ -15,11 +16,16 @@ Build and packages check automation for Django projects
 
 Run `python3 django-up-to-date/build.py` after a source code or package update.
 
+Run `python3 django-up-to-date/safety.py` to find packages with security
+vulnerabilities.
+
 ## Required
 
 - Python 3
 - pipenv
 - Django (because of the commands)
+- pip < 9.0.2 for the vulnerabilities check
+  (see [this issue](https://github.com/pyupio/safety/issues/90))
 - `build.py` has to be in a subdirectory of the Django project (designed to be
   used as Git submodule) or the environment variable `DJANGO_PROJECT_PATH` has
   to be set

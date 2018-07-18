@@ -164,3 +164,37 @@ class BuildTests(unittest.TestCase):
             self.build.run()
         self.assertEqual(cm.exception.code, 0)
         os.remove(self.temp_uwsgi_path)
+
+
+class CheckTests(unittest.TestCase):
+    project_path = os.path.join(TEST_PATH, 'project')
+
+    def setUp(self):
+        os.mkdir(os.path.join(self.project_path, 'logs'))
+
+    def tearDown(self):
+        shutil.rmtree(os.path.join(self.project_path, 'logs'))
+
+    def test_safety(self):
+        checks = main.Checks()
+        checks.project_path = self.project_path
+        checks.test = True
+        with self.assertRaises(SystemExit) as cm:
+            checks.safety()
+        self.assertNotEqual(cm.exception.code, 0)
+        self.assertTrue(os.path.exists(checks.log_path))
+        with open(checks.log_path, 'r+') as f:
+            self.assertIn(
+                'django >=1.10,<1.10.3 resolved (1.10.2 installed)!',
+                f.read(),
+            )
+
+    def test_safety_command(self):
+        os.environ['DJANGO_PROJECT_PATH'] = self.project_path
+        result = subprocess.run(
+            ('python3', os.path.join(os.path.dirname(TEST_PATH), 'safety.py')),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        os.environ.pop('DJANGO_PROJECT_PATH')
+        self.assertNotEqual(result.returncode, 0)
