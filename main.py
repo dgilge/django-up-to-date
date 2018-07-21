@@ -156,6 +156,7 @@ class Build(Base):
             # TODO Schedule to --clear it from time to time
             self.collect_static_files()
             self.reload_webserver()
+        self.clear_sessions()
         sys.exit(0)
 
     def sync_packages(self):
@@ -243,6 +244,12 @@ class Build(Base):
         path = os.path.join(self.project_path, 'uwsgi.ini')
         Path(path).touch()
         return path
+
+    def clear_sessions(self):
+        """
+        Clears expired sessions (in cases of database or file backend).
+        """
+        self.run_command(self.python, 'manage.py', 'clearsessions')
 
 
 class Checks(Base):

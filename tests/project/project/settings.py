@@ -10,6 +10,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'testapp',
+    'django.contrib.sessions',
     'django.contrib.staticfiles',
 ]
 

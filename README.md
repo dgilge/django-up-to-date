@@ -7,6 +7,7 @@ Build and packages check automation for Django projects
 - Run tests, excluding tags `slow` and `selenium`. If they passed
 - run all required Django commands necessary after code base updates and
 - `touch uwsgi.ini`.
+- Clear sessions.
 - Find packages with known security vulnerabilities.
 - Log all output to a file or shell.
 - Send an e-mail error report if a command exited not with returncode 0 and
