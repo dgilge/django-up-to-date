@@ -171,7 +171,9 @@ class Build(Base):
         else:
             self.run_command('pipenv', 'sync')
         # Clean up unneeded packages
-        self.run_command('pipenv', 'clean')
+        # This command sometimes deletes (GitHub) packages included in
+        # Pipfile.lock
+        # self.run_command('pipenv', 'clean')
 
     def collect_static_files(self, dry=False):
         """
