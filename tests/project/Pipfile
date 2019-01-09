@@ -5,6 +5,5 @@ name = "pypi"
 
 [packages]
 django = "==1.10.2"
-pip = "==9.0.1"
 
 [dev-packages]

@@ -25,8 +25,6 @@ vulnerabilities.
 - Python 3
 - pipenv
 - Django (because of the commands)
-- pip < 9.0.2 for the vulnerabilities check
-  (see [this issue](https://github.com/pyupio/safety/issues/90))
 - `build.py` has to be in a subdirectory of the Django project (designed to be
   used as Git submodule) or the environment variable `DJANGO_PROJECT_PATH` has
   to be set
