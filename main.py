@@ -95,7 +95,7 @@ class Base:
                 if not self.debug:
                     # Send fail notification
                     self.send_email(
-                        subject='Build failed: ()'.format(self.name),
+                        subject='Build failed: ({})'.format(self.name),
                         content='\n\n'.join((
                             str(e),
                             '{} ({})'.format(self.name, self.project_path),
