@@ -51,3 +51,8 @@ vulnerabilities.
   [test]
   SETTINGS: optional.django.test.settings
   ```
+## Tests
+
+`cd` to `tests` and run `python3 -m unittest tests`. (Tests take quite a while.)
+Don't wonder that an old Django version is used for the tests. A version with
+security vulnerabilities is required for the tests to pass.
